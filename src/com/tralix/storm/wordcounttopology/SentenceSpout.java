@@ -10,7 +10,7 @@ import backtype.storm.utils.Utils;
 
 import java.util.Map;
 
-public class SentenceSpout extends BaseRichSpout{
+public class SentenceSpout extends BaseRichSpout {
 
     private SpoutOutputCollector collector;
 
@@ -36,11 +36,20 @@ public class SentenceSpout extends BaseRichSpout{
 
     @Override
     public void nextTuple() {
-        this.collector.emit(new Values(sentences[index]));
-        index++;
-        if (index >= sentences.length) {
-            index = 0;
+        if (index < sentences.length) {
+            this.collector.emit(new Values(sentences[index]), index++);
         }
-        Utils.sleep(500);
+//        Utils.sleep(500);
+    }
+
+    @Override
+    public void ack(final Object msgId) {
+        System.out.println("ACK:" + msgId);
+    }
+
+    @Override
+    public void fail(final Object msgId) {
+        System.out.println("FAIL:" + msgId);
+        this.collector.emit(new Values(sentences[(Integer) msgId]), msgId);
     }
 }

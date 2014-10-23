@@ -4,28 +4,31 @@ import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichBolt;
-import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
-import backtype.storm.tuple.Values;
 
 import java.util.Arrays;
 import java.util.Map;
 
-public class SplitSentenceBolt extends BaseRichBolt {
+public class SecondtBolt extends BaseRichBolt {
     private OutputCollector collector;
+    int counter = 0;
+
     public void prepare(Map config, TopologyContext context,
                         OutputCollector collector) {
         this.collector = collector;
     }
+
     public void execute(Tuple tuple) {
-        String sentence = tuple.getStringByField("sentence");
-        String[] words = sentence.split(" ");
-        System.out.println(Arrays.asList(words));
-//        for(String word : words){
-//            this.collector.emit(new Values(word));
-//        }
+        if (counter++ == 2)
+            this.collector.fail(tuple);
+        else {
+            String sentence = tuple.getStringByField("anothersentence");
+            System.out.println("SECONDBOLT:" + Arrays.asList(sentence));
+            this.collector.ack(tuple);
+        }
+
     }
+
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        declarer.declare(new Fields("word"));
     }
 }
